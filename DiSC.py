@@ -10,7 +10,8 @@ from firebase import Firebase
 import random
 from firebase_admin import db
 
-client = discord.Client()
+Client = discord.Client()
+client = commands.Bot(command_prefix = '~')
 
 @client.event
 async def on_ready():
@@ -57,7 +58,42 @@ def Get_rating(xp1content):
 @client.event
 async def on_message(message):
 
-        if message.content.startswith('2v2.db'):
+        if message.content.upper().startswith('~input_match'):
+            major = db.child("major_role").get()
+            if major in [role.id for role in message.author.roles]:
+                await client.send_message(message.channel, 'How many players on the winning team?')
+                win_num_play = await client.wait_for_message(author=message.author)
+                await client.send_message(message.channel, 'How many players on the losing team?')
+                lose_num_play = await client.wait_for_message(author=message.author)
+                await client.send_message(message.channel, 'How many substitutions did the winning team make?')
+                win_num_subs = await client.wait_for_message(author=message.author)
+                await client.send_message(message.channel, 'How many substitutions did the losing team make?')
+                lose_num_subs = await client.wait_for_message(author=message.author)
+
+                team1 = []
+                team2 = []
+                n = 1
+                for i in range (win_num_play.content):
+                    await client.send_message(message.channel, 'Name of player' + n + ' on winning team?')
+                    player = await client.wait_for_message(author=message.author)
+                    team1.append(player.content)
+                    n += 1
+                return team1
+
+                for i in range (lose_num_play.content):
+                    await client.send_message(message.channel, 'Name of player' + n + ' on losing team?')
+                    player = await client.wait_for_message(author=message.author)
+                    team2.append(player.content)
+                    n += 1
+                return team2
+
+                
+
+                
+            else:
+                print ("You don't have the permissions to complete this command :facepalm:")
+
+        '''if message.content.startswith('2v2.db'):
             await client.send_message(message.channel,'Enter player')
             
             xp1 = await client.wait_for_message(author=message.author)
@@ -98,7 +134,7 @@ async def on_message(message):
             db.child("players").child(xp3.content).update({"mu": r3m})
             db.child("players").child(xp3.content).update({"sigma":r3s})
             db.child("players").child(xp4.content).update({"mu": r4m})
-            db.child("players").child(xp4.content).update({"sigma":r4s})
+            db.child("players").child(xp4.content).update({"sigma":r4s})'''
 
         elif message.content.startswith('check.p'):
             await client.send_message(message.channel, '`how many?`')
@@ -117,24 +153,33 @@ async def on_message(message):
             await client.send_message(message.channel, '`pushing data`')
             db.child("players").child(xp3.content).child("mu").set(xp1.content)
             db.child("players").child(xp3.content).child("sigma").set(xp2.content)
-            
-        elif message.content.startswith('new_player'):
-            await client.send_message(message.channel, '`Name`')
+
+        #add player to competition    
+        elif message.content.startswith('add_player'):
+            await client.send_message(message.channel, '`Name of player?`')
             xp3 = await client.wait_for_message(author=message.author)
+            await client.send_message(message.channel, '`Name of team?`')
+            xp4 = await client.wait_for_message(author=message.author)
             await client.send_message(message.channel, '`pushing data`')
-            db.child("players").child(xp3.content).child("mu").set(10)
-            db.child("players").child(xp3.content).child("sigma").set(8)
+            db.child("players").child(xp3.content).child("mu").set(25.0)
+            db.child("players").child(xp3.content).child("sigma").set(8.333)
+            db.child("players").child(xp3.content).child("team").set(xp4.content)
+            db.child("players").child(xp3.content).child("Kills").set(0)
+            db.child("players").child(xp3.content).child("Deaths").set(0)
+            db.child("players").child(xp3.content).child("win%").set(0)
+            db.child("players").child(xp3.content).child("rP").set(0)
+            db.child("players").child(xp3.content).child("rW").set(0)
 
         #new team
         '''elif message.content.startswith('add_team'):
             await client.send_message(message.channel, '`Name of team?`')
             xp3 = await client.wait_for_message(author=message.author)
             await client.send_message(message.channel, '`pushing data`')
-            db.child("players").child(xp3.content).child("mu").set(10)
-            db.child("players").child(xp3.content).child("sigma").set(8)'''
+            db.child("teams").child(xp3.content).child("mu").set(10)
+            db.child("teams").child(xp3.content).child("sigma").set(8)'''
             
         #update player stats           
-        elif message.content.startswith('update_player'):
+        if message.content.startswith('update_player'):
             await client.send_message(message.channel, '`player name, mu, sigma`')
             xp0 = await client.wait_for_message(author=message.author)
             xp1 = await client.wait_for_message(author=message.author)
@@ -352,10 +397,31 @@ async def on_message(message):
                 db.child("players").child(xp3.content).child("mu").set(10)
                 db.child("players").child(xp3.content).child("sigma").set(8)
 
-        elif message.content.startswith('!help'):
-            await client.send_message(message.channel,'player.list' + "\n" + 'coinflip' + "\n" + ".find")
+        elif message.content.upper().startswith('~help'):
+            await client.send_message(message.channel,'```player_list' + "\n" + 'coinflip' + "\n" + "find" + "\n" + "set_major_role_perm" + "\n" + "set_minor_role_perm" + "\n" + "update_major_role_perm" + "\n" + "update_minor_role_perm```")
                 
 
+        elif message.content.upper().startswith('~set_major_role_perm'):
+            await client.send_message(message.channel, "What role would you like to access the bot's admin functions?")
+            major_access = await client.wait_for_message(author=message.author)
+            db.child("major_role").set(major_access.content)
+            
+
+        elif message.content.upper().startswith('~set_minor_role_perm'):
+            await client.send_message(message.channel, "What role would you like to access the bot's lesser functions?")
+            minor_access = await client.wait_for_message(author=message.author)
+            db.child("minor_role").set(minor_access)
+
+        elif message.content.upper().startswith('~update_major_role_perm'):
+            await client.send_message(message.channel, "What role would you like to access the bot's admin functions?")
+            major_access = await client.wait_for_message(author=message.author)
+            db.child("major_role").update(major_access.content)
+
+        elif message.content.upper().startswith('~update_minor_role_perm'):
+            await client.send_message(message.channel, "What role would you like to access the bot's lesser functions?")
+            minor_access = await client.wait_for_message(author=message.author)
+            db.child("minor_role").update(minor_access.content)
+                      
 
 
 
