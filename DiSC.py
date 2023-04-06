@@ -25,7 +25,7 @@ async def on_ready():
 cred = credentials.Certificate('C:/Users/tomda/Downloads/rpft-bot-firebase-adminsdk-qyeg7-820469b533.json')
 
 config = {
-    "apiKey": "AIzaSyCmefwmQBf7hMEvb2i9HkDujChy_xhqIeE",
+    "apiKey": "", #removed for security
     "authDomain": "rpft-bot.firebaseapp.com",
     "databaseURL": "https://rpft-bot.firebaseio.com",
     "storageBucket": "rpft-bot.appspot.com",
@@ -425,4 +425,4 @@ async def on_message(message):
 
 
 
-client.run("NTIxOTgxMzE4ODk3MjA1MjQ4.Dyr2wg.FZ2G8h62bRMZmMcTypmfy6UuD3U")
+client.run("") #token
